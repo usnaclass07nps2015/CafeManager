@@ -828,6 +828,7 @@ function printSavedReceipt(copy) {
 }
 
 function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderType, customerName, paymentMethod, paymentConfirmed }, copy = 'kitchen') {
+  state._currentReceiptData = { items, subtotal, discount, total, id, dailySeq, copy };
   const now = new Date();
   const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
   const displayId = dailySeq || id;
@@ -873,8 +874,9 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
     h('<div class="rcpt-thanks">Thank you! &bull; ขอบคุณ!</div>');
   }
   h('</div>');
-  h('<div style="display:flex;gap:10px;justify-content:center;margin-top:15px" class="no-print">');
-  h('<button class="btn btn-primary" onclick="document.getElementById(\'receipt-paper\').classList.add(\'printing\');window.print()">&#x1F5A8; Print</button>');
+  h('<div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap" class="no-print">');
+  h('<button class="btn btn-primary" onclick="document.getElementById(\'receipt-paper\').classList.add(\'printing\');window.print()">&#x1F5A8; ' + (t('cashier.print') || 'Print') + '</button>');
+  h('<button class="btn btn-success" onclick="posPrint(this)">&#x1F5B6; POS Print</button>');
   h('<button class="btn btn-outline" onclick="closeReceipt()">' + (t('orders.close') || 'Close') + '</button>');
   h('</div>');
   h('</div>');
@@ -887,6 +889,26 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
 function closeReceipt() {
   const el = document.getElementById('receipt-overlay-container');
   if (el) el.remove();
+}
+
+async function posPrint(btn) {
+  const d = state._currentReceiptData;
+  if (!d) return;
+  btn.disabled = true;
+  btn.textContent = 'Printing...';
+  try {
+    await api('/api/print-receipt', 'POST', {
+      items: d.items, subtotal: d.subtotal, discount: d.discount,
+      total: d.total, daily_seq: d.dailySeq, id: d.id, copy: d.copy
+    });
+    btn.textContent = '✅ Printed';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🖶 POS Print'; }, 2000);
+  } catch (e) {
+    btn.textContent = '❌ Failed';
+    alert('POS Print Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '🖶 POS Print';
+  }
 }
 
 // ─── Orders ──────────────────────────────────────────────────────────

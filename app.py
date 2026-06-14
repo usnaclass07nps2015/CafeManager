@@ -624,6 +624,90 @@ def export_sales_pdf():
     response.headers['Content-Disposition'] = 'attachment; filename=order_history.pdf'
     return response
 
+@app.route('/api/print-receipt', methods=['POST'])
+@login_required
+def print_receipt():
+    data = request.json
+    if not data or not data.get('items'):
+        return jsonify({'error': 'No receipt data'}), 400
+
+    items = data['items']
+    subtotal = data.get('subtotal', 0)
+    discount = data.get('discount', 0)
+    total = data.get('total', 0)
+    display_id = data.get('daily_seq') or data.get('id', '')
+    copy = data.get('copy', 'kitchen')
+    date_str = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    W = 32
+    def center(s):
+        pad = max(0, W - len(s)) // 2
+        return ' ' * pad + s
+    def line():
+        return '-' * W
+    def row(left, right):
+        r = right[:12]
+        l = left[:W - len(r) - 1]
+        return l + ' ' + r
+
+    txt = ''
+    txt += center('Homlamoon') + '\n'
+    txt += center(date_str) + '\n'
+    txt += center('#' + str(display_id)) + '\n'
+    txt += line() + '\n'
+
+    if copy in ('kitchen', 'both'):
+        for i in items:
+            name = i.get('name', '')[:W - 10]
+            price = i.get('price', 0) * i.get('qty', 1)
+            txt += row(name, '฿{:.0f}'.format(price)) + '\n'
+            txt += '  x{} @ ฿{:.0f}'.format(i.get('qty', 1), i.get('price', 0)) + '\n'
+        txt += line() + '\n'
+        txt += row('Subtotal', '฿{:.0f}'.format(subtotal)) + '\n'
+        if discount > 0:
+            txt += row('Discount', '-฿{:.0f}'.format(discount)) + '\n'
+        txt += row('TOTAL', '฿{:.0f}'.format(total)) + '\n'
+        txt += line() + '\n'
+        txt += center('Thank you!') + '\n'
+
+    if copy in ('customer', 'both'):
+        txt += center('--- Customer Copy ---') + '\n'
+        txt += center('Homlamoon') + '\n'
+        txt += center(date_str) + '\n'
+        txt += center('#' + str(display_id)) + '\n'
+        txt += line() + '\n'
+        for i in items:
+            name = i.get('name', '')[:W - 10]
+            price = i.get('price', 0) * i.get('qty', 1)
+            txt += row(name, '฿{:.0f}'.format(price)) + '\n'
+            txt += '  x{} @ ฿{:.0f}'.format(i.get('qty', 1), i.get('price', 0)) + '\n'
+        txt += line() + '\n'
+        txt += row('Subtotal', '฿{:.0f}'.format(subtotal)) + '\n'
+        if discount > 0:
+            txt += row('Discount', '-฿{:.0f}'.format(discount)) + '\n'
+        txt += row('TOTAL', '฿{:.0f}'.format(total)) + '\n'
+        txt += line() + '\n'
+        txt += center('Thank you!') + '\n'
+
+    txt += '\n\n\n'  # paper cut margin
+    raw = txt.encode('cp874', errors='replace')
+
+    try:
+        import win32print
+        printer_name = data.get('printer') or win32print.GetDefaultPrinter()
+        h = win32print.OpenPrinter(printer_name)
+        try:
+            win32print.StartDocPrinter(h, 1, ('Receipt', None, 'RAW'))
+            win32print.StartPagePrinter(h)
+            win32print.WritePrinter(h, raw)
+            win32print.EndPagePrinter(h)
+            win32print.EndDocPrinter(h)
+        finally:
+            win32print.ClosePrinter(h)
+        return jsonify({'ok': True, 'printer': printer_name})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ─── Promotions ──────────────────────────────────────────────────────
 @app.route('/promotions')
 @login_required
