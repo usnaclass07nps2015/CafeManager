@@ -635,8 +635,8 @@ body.compact .form-row { grid-template-columns: 1fr; }
 .receipt-paper {
   background: #fff; color: #000; font-weight: bold;
   font-family: "Courier New", monospace; font-size: 14px;
-  width: 380px; max-width: 100%; max-height: 80vh; overflow-y: auto;
-  padding: 15px 20px; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  width: 500px; max-width: 95%; max-height: 80vh; overflow-y: auto;
+  padding: 20px 25px; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 .receipt-paper.printing { max-height: none; overflow: visible; }
 .rcpt-center { text-align: center; }
