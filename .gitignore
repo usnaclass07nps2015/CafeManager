@@ -6,7 +6,12 @@ __pycache__/
 flask*.log
 ngrok*.log
 node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures
 build-apk.js
 hotlatte.jfif
 menu*.csv
-package*.json
+

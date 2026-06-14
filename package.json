@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
+  }
+}

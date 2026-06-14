@@ -824,6 +824,39 @@ function closeSavedReceipt() {
 function printSavedReceipt(copy) {
   const r = state._lastReceipt;
   if (!r) return;
+  // Build receipt text
+  const now = new Date();
+  const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+  const displayId = r.dailySeq || r.id;
+  const serviceLabel = r.orderType === 'takeaway' ? 'TAKEAWAY' : 'DINE-IN';
+  const ppStatus = r.paymentMethod === 'promptpay' ? (r.paymentConfirmed ? 'Paid' : 'Pending') : '';
+  let text = '--- ' + copy.toUpperCase() + ' COPY ---\n';
+  text += '      Homlamoon\n';
+  text += '      ' + dateStr + '\n';
+  text += '      #' + displayId + ' ' + serviceLabel + '\n';
+  if (r.customerName) text += '      Customer: ' + r.customerName + '\n';
+  text += '--------------------------------\n';
+  r.items.forEach(i => {
+    text += i.name + '\n';
+    text += '  x' + i.qty + '  @฿' + i.price.toFixed(2) + '  ฿' + (i.price * i.qty).toFixed(2) + '\n';
+  });
+  text += '--------------------------------\n';
+  text += 'Subtotal\t฿' + r.subtotal.toFixed(2) + '\n';
+  if (r.discount > 0) text += 'Discount\t-฿' + r.discount.toFixed(2) + '\n';
+  text += 'TOTAL\t\t฿' + r.total.toFixed(2) + '\n';
+  if (r.paymentMethod === 'promptpay') {
+    text += 'PromptPay -- ' + ppStatus + '\n';
+  }
+  text += '--------------------------------\n';
+  text += '  Thank you! \u2022 \u0e02\u0e2d\u0e1a\u0e04\u0e38\u0e13!\n';
+  // Try native Bluetooth print (Capacitor app)
+  if (window.isNativeApp && window.nativePrint) {
+    window.nativePrint(text).then(success => {
+      if (!success) printReceipt({ items: r.items, subtotal: r.subtotal, discount: r.discount, total: r.total, id: r.id, dailySeq: r.dailySeq, orderType: r.orderType, customerName: r.customerName, paymentMethod: r.paymentMethod, paymentConfirmed: r.paymentConfirmed }, copy);
+    });
+    return;
+  }
+  // Fallback: show overlay + browser print dialog
   printReceipt({ items: r.items, subtotal: r.subtotal, discount: r.discount, total: r.total, id: r.id, dailySeq: r.dailySeq, orderType: r.orderType, customerName: r.customerName, paymentMethod: r.paymentMethod, paymentConfirmed: r.paymentConfirmed }, copy);
 }
 
