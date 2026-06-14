@@ -876,7 +876,7 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
   h('<div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap" class="no-print">');
   h('<button class="btn btn-primary" onclick="document.getElementById(\'receipt-paper\').classList.add(\'printing\');window.print()">&#x1F5A8; ' + (t('cashier.print') || 'Print') + '</button>');
 
-  h('<button class="btn btn-outline" onclick="closeReceipt()">' + (t('orders.close') || 'Close') + '</button>');
+  h('<button class="btn btn-secondary" onclick="closeReceipt()">' + (t('orders.close') || 'Close') + '</button>');
   h('</div>');
   h('</div>');
   const el = document.createElement('div');

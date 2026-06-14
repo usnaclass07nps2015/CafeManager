@@ -195,6 +195,8 @@ body {
 .btn-danger:hover { background: #B94A4A; }
 .btn-success { background: var(--success); color: #fff; }
 .btn-success:hover { background: #556B2F; }
+.btn-secondary { background: #666; color: #fff; }
+.btn-secondary:hover { background: #555; }
 .btn-outline {
   background: transparent; border: 2px solid var(--border); color: var(--text);
 }
