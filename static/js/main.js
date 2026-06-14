@@ -828,6 +828,7 @@ function printSavedReceipt(copy) {
 }
 
 function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderType, customerName, paymentMethod, paymentConfirmed }, copy = 'kitchen') {
+  closeReceipt();
   const now = new Date();
   const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
   const displayId = dailySeq || id;
@@ -875,18 +876,14 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
   h('</div>');
   h('<div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap" class="no-print">');
   h('<button class="btn btn-primary" onclick="document.getElementById(\'receipt-paper\').classList.add(\'printing\');window.print()">&#x1F5A8; ' + (t('cashier.print') || 'Print') + '</button>');
-
   h('<button class="btn btn-secondary" onclick="closeReceipt()">' + (t('orders.close') || 'Close') + '</button>');
   h('</div>');
   h('</div>');
-  const el = document.createElement('div');
-  el.id = 'receipt-overlay-container';
-  el.innerHTML = html;
-  document.body.appendChild(el);
+  document.body.insertAdjacentHTML('beforeend', html);
 }
 
 function closeReceipt() {
-  const el = document.getElementById('receipt-overlay-container');
+  const el = document.getElementById('receipt-overlay');
   if (el) el.remove();
 }
 

@@ -655,7 +655,7 @@ body.compact .form-row { grid-template-columns: 1fr; }
   #receipt-overlay { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
   #receipt-overlay * { display: block !important; }
   #receipt-paper { width: 40mm !important; padding: 2px 5px !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; max-height: none !important; overflow: visible !important; font-size: 11px !important; margin: 0 auto !important; }
-  #receipt-paper .no-print { display: none !important; }
+  #receipt-overlay .no-print { display: none !important; }
   #receipt-paper .rcpt-brand { font-size: 15px !important; }
   #receipt-paper .rcpt-sub { font-size: 10px !important; }
   #receipt-paper .rcpt-line { margin: 3px 0 !important; }
