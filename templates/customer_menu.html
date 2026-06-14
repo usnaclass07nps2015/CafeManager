@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homlamoon Menu</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F9C1;</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #F5E6D0; color: #3E2723;
+      padding-bottom: 100px;
+    }
+    .header {
+      background: linear-gradient(135deg, #6D4C41, #5D4037);
+      color: #FFF8F0; padding: 1.2rem 1rem;
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header h1 { font-size: 1.4rem; }
+    .header p { font-size: 0.85rem; opacity: 0.8; margin-top: 0.2rem; }
+    .header .btn-close {
+      position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.15); border: none; color: #FFF8F0;
+      width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .header .btn-close:hover { background: rgba(255,255,255,0.3); }
+    .container { max-width: 700px; margin: 0 auto; padding: 0.8rem; }
+    .section { margin-bottom: 1.2rem; }
+    .section h2 {
+      font-size: 1.1rem; color: #6D4C41;
+      padding: 0.5rem 0; border-bottom: 2px solid #D7CCC8;
+      margin-bottom: 0.6rem;
+    }
+    .menu-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #FFF8F0; padding: 0.7rem 0.9rem;
+      border-radius: 10px; margin-bottom: 0.4rem;
+      border: 1px solid #D7CCC8;
+    }
+    .menu-item .info { flex: 1; }
+    .menu-item .name { font-weight: 600; font-size: 0.95rem; }
+    .menu-item .desc { font-size: 0.8rem; color: #8D6E63; margin-top: 0.15rem; }
+    .menu-item .price { font-weight: 700; color: #6D4C41; font-size: 1rem; margin: 0 0.8rem; white-space: nowrap; }
+    .menu-item .btn-add {
+      background: #8D6E63; color: #FFF; border: none;
+      width: 32px; height: 32px; border-radius: 50%;
+      font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s;
+    }
+    .menu-item .btn-add:active { transform: scale(0.9); }
+    .menu-item .qty-control {
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .menu-item .qty-control button {
+      background: #D7CCC8; border: none; width: 28px; height: 28px;
+      border-radius: 50%; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .menu-item .qty-control span { font-weight: 700; min-width: 20px; text-align: center; }
+
+    .cart-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #FFF8F0; border-top: 2px solid #D7CCC8;
+      padding: 0.8rem 1rem; box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+      z-index: 20;
+    }
+    .cart-bar-inner {
+      max-width: 700px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .cart-bar .total { font-weight: 700; font-size: 1.1rem; color: #6D4C41; }
+    .cart-bar .count { font-size: 0.85rem; color: #8D6E63; }
+    .cart-bar .btn-order {
+      background: #6D4C41; color: #FFF; border: none;
+      padding: 0.6rem 1.5rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+    }
+    .cart-bar .btn-order:disabled { opacity: 0.4; cursor: default; }
+
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 30;
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #FFF8F0; border-radius: 16px;
+      padding: 1.5rem; width: 100%; max-width: 400px;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 1.2rem; color: #6D4C41; margin-bottom: 1rem; }
+    .modal .field { margin-bottom: 0.8rem; }
+    .modal label { font-size: 0.85rem; font-weight: 600; color: #8D6E63; display: block; margin-bottom: 0.3rem; }
+    .modal input {
+      width: 100%; padding: 0.6rem 0.8rem;
+      border: 2px solid #D7CCC8; border-radius: 8px; font-size: 0.95rem;
+    }
+    .modal input:focus { outline: none; border-color: #A1887F; }
+    .modal .btn-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .modal .btn-row button { flex: 1; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+    .modal .btn-cancel { background: #D7CCC8; color: #5D4037; }
+    .modal .btn-confirm { background: #6D4C41; color: #FFF; }
+    .modal .order-items { margin-bottom: 1rem; }
+    .modal .order-item {
+      display: flex; justify-content: space-between;
+      padding: 0.3rem 0; font-size: 0.9rem;
+      border-bottom: 1px solid #EFEBE9;
+    }
+    .modal .order-total {
+      display: flex; justify-content: space-between;
+      font-weight: 700; font-size: 1.1rem; color: #6D4C41;
+      padding-top: 0.5rem; border-top: 2px solid #D7CCC8;
+    }
+    .success-msg {
+      text-align: center; padding: 1.5rem 0;
+    }
+    .success-msg .check { font-size: 3rem; }
+    .success-msg h2 { color: #2E7D32; margin: 0.5rem 0; }
+    .success-msg p { color: #8D6E63; font-size: 0.9rem; }
+    .promo-banner {
+      background: linear-gradient(135deg, #A1887F, #8D6E63);
+      color: #FFF8F0; border-radius: 10px; padding: 0.8rem 1rem;
+      margin-bottom: 0.8rem; display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .promo-banner .promo-name { font-weight: 700; font-size: 0.95rem; }
+    .promo-banner .promo-discount {
+      background: #FF8A65; color: #FFF; font-weight: 700;
+      padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .promo-banner .promo-desc { font-size: 0.8rem; opacity: 0.85; margin-top: 0.15rem; }
+    .ad-card {
+      background: #FFF8F0; border: 1px solid #D7CCC8;
+      border-radius: 10px; padding: 0.8rem; margin-bottom: 0.5rem;
+      display: flex; gap: 0.8rem; align-items: flex-start;
+    }
+    .ad-card img {
+      width: 64px; height: 64px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .ad-card .ad-title { font-weight: 700; font-size: 0.9rem; color: #3E2723; }
+    .ad-card .ad-content { font-size: 0.8rem; color: #8D6E63; margin-top: 0.15rem; }
+    .section-label { font-size: 0.85rem; font-weight: 600; color: #8D6E63; text-transform: uppercase; letter-spacing: 0.5px; margin: 1rem 0 0.5rem; }
+
+    .option-group { margin-bottom: 1rem; }
+    .option-group label.opt-label { font-size: 0.85rem; font-weight: 600; color: #8D6E63; display: block; margin-bottom: 0.4rem; }
+    .option-group .opts { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .option-group .opts button {
+      padding: 0.4rem 0.9rem; border: 2px solid #D7CCC8; border-radius: 20px;
+      background: #FFF8F0; color: #3E2723; font-size: 0.85rem; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .option-group .opts button.active { border-color: #8D6E63; background: #8D6E63; color: #FFF; }
+    .option-group .opts button:active { transform: scale(0.95); }
+    .drink-addon-item {
+      display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0;
+      border-bottom: 1px solid #EFEBE9; font-size: 0.9rem; cursor: pointer;
+    }
+    .drink-addon-item input { width: auto; }
+    .drink-summary {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 0; border-top: 2px solid #D7CCC8;
+      font-weight: 700; font-size: 1.1rem; color: #6D4C41;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>&#x1F9C1; Homlamoon</h1>
+      <p>Our Menu</p>
+    </div>
+    <button class="btn-close" onclick="closeTab()" title="Close tab">&times;</button>
+  </div>
+  <div class="container">
+    <div id="promos-container"></div>
+    <div id="menu-container">
+      <div style="text-align:center;padding:2rem;color:#8D6E63">Loading...</div>
+    </div>
+    <div id="ads-container"></div>
+  </div>
+
+  <div class="cart-bar" id="cart-bar" style="display:none">
+    <div class="cart-bar-inner">
+      <div>
+        <div class="total" id="cart-total">฿0.00</div>
+        <div class="count" id="cart-count">0 items</div>
+      </div>
+      <button class="btn-order" id="order-btn" onclick="showOrderModal()">Place Order</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="drink-custom-modal">
+    <div class="modal">
+      <h2 id="drink-custom-title">&#x2615; Customize</h2>
+      <div id="drink-custom-body">
+        <div class="option-group" id="drink-temp-group">
+          <label class="opt-label">Temperature</label>
+          <div class="opts" id="drink-temp-opts"></div>
+        </div>
+        <div class="option-group">
+          <label class="opt-label">Sugar Level</label>
+          <div class="opts" id="drink-sugar-opts"></div>
+        </div>
+        <div class="option-group" id="drink-addon-group">
+          <label class="opt-label">Add-ons</label>
+          <div id="drink-addon-list"></div>
+        </div>
+        <div class="drink-summary">
+          <span>Total</span>
+          <span>฿<span id="drink-custom-total">0.00</span></span>
+        </div>
+        <div class="btn-row">
+          <button class="btn-cancel" onclick="closeDrinkCustom()">Cancel</button>
+          <button class="btn-confirm" onclick="confirmDrinkCustom()">Add to Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="order-modal">
+    <div class="modal">
+      <div id="order-modal-body">
+        <h2>&#x1F6D2; Your Order</h2>
+        <div class="order-items" id="order-items-list"></div>
+        <div class="order-total"><span>Total</span><span id="order-modal-total">฿0.00</span></div>
+        <div class="field">
+          <label for="customer-name">Your Name (optional)</label>
+          <input type="text" id="customer-name" placeholder="Enter your name">
+        </div>
+        <div class="btn-row">
+          <button class="btn-cancel" onclick="closeOrderModal()">Back</button>
+          <button class="btn-confirm" onclick="submitOrder()">Confirm Order</button>
+        </div>
+      </div>
+      <div id="order-success" style="display:none">
+        <div class="success-msg">
+          <div class="check">&#x2705;</div>
+          <h2>Order Placed!</h2>
+          <p>Your order #<span id="order-number"></span> has been received.</p>
+          <p style="margin-top:0.5rem;font-size:0.85rem">Thank you! &#x1F9C1;</p>
+        </div>
+        <button class="btn-confirm" style="width:100%;padding:0.6rem;border:none;border-radius:8px;font-weight:600;cursor:pointer;" onclick="resetOrder()">Order Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeTab() {
+      window.close();
+      setTimeout(() => {
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F5E6D0;color:#3E2723;font-family:sans-serif;padding:2rem;text-align:center"><div><div style="font-size:3rem;margin-bottom:0.5rem">&#x1F44B;</div><h2 style="color:#6D4C41;margin-bottom:0.5rem">You can now close this tab</h2><p style="color:#8D6E63">Thank you for visiting Homlamoon!</p></div></div>';
+      }, 100);
+    }
+
+    const state = { cart: [], menuItems: [], addonItems: [], pendingDrink: null };
+
+    async function loadMenu() {
+      try {
+        const [menu, promos, ads] = await Promise.all([
+          fetch('/api/public/menu').then(r => r.json()),
+          fetch('/api/public/promotions').then(r => r.json()),
+          fetch('/api/public/ads').then(r => r.json())
+        ]);
+        state.menuItems = menu;
+        state.addonItems = menu.filter(i => i.category === 'addon');
+        renderPromos(promos);
+        renderAds(ads);
+        renderMenu();
+      } catch(e) {
+        document.getElementById('menu-container').innerHTML = '<div style="text-align:center;padding:2rem;color:#C62828">Failed to load menu. Please try again.</div>';
+      }
+    }
+
+    function renderPromos(promos) {
+      const container = document.getElementById('promos-container');
+      if (!promos.length) { container.innerHTML = ''; return; }
+      container.innerHTML = promos.map(p => `
+        <div class="promo-banner">
+          <div>
+            <div class="promo-name">${p.name}</div>
+            ${p.description ? `<div class="promo-desc">${p.description}</div>` : ''}
+          </div>
+          <div class="promo-discount">-${p.discount_percent}%</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAds(ads) {
+      const container = document.getElementById('ads-container');
+      if (!ads.length) { container.innerHTML = ''; return; }
+      container.innerHTML = `<div class="section-label">Promotions &amp; Advertisements</div>` +
+      ads.map(a => `
+        <div class="ad-card">
+          ${a.image ? `<img src="${a.image}" alt="${a.title}">` : ''}
+          <div>
+            <div class="ad-title">${a.title}</div>
+            ${a.content ? `<div class="ad-content">${a.content}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function totalQty(id) {
+      return state.cart.reduce((s, c) => s + (c.id === id ? c.qty : 0), 0);
+    }
+
+    function renderMenu() {
+      const groups = { drink: [], bakery: [], addon: [] };
+      state.menuItems.forEach(i => {
+        if (groups[i.category]) groups[i.category].push(i);
+      });
+      const labels = { drink: '&#x2615; Drinks', bakery: '&#x1F9C1; Bakery', addon: '&#x2795; Add-ons' };
+      let html = '';
+      ['drink','bakery','addon'].forEach(cat => {
+        if (!groups[cat].length) return;
+        html += `<div class="section"><h2>${labels[cat]}</h2>`;
+        groups[cat].forEach(i => {
+          const qty = totalQty(i.id);
+          const isDrink = i.category === 'drink' && i.drink_config && (i.drink_config.hot || i.drink_config.iced);
+          html += `<div class="menu-item">
+            <div class="info">
+              <div class="name">${i.name}</div>
+              ${i.description ? `<div class="desc">${i.description}</div>` : ''}
+            </div>
+            <div class="price">฿${i.price.toFixed(2)}</div>`;
+          if (isDrink) {
+            html += `<div class="qty-control" style="gap:0.2rem">
+              ${qty > 0 ? `<button onclick="removeDrinkItem(${i.id})">−</button>` : ''}
+              ${qty > 0 ? `<span>${qty}</span>` : ''}
+              <button class="btn-add" onclick="updateQty(${i.id},1)" style="position:static;border-radius:50%;width:32px;height:32px;background:#8D6E63;color:#FFF;border:none;font-size:1.2rem">+</button>
+            </div>`;
+          } else if (qty > 0) {
+            html += `<div class="qty-control">
+              <button onclick="updateQty(${i.id},-1)">−</button>
+              <span>${qty}</span>
+              <button onclick="updateQty(${i.id},1)">+</button>
+            </div>`;
+          } else {
+            html += `<button class="btn-add" onclick="updateQty(${i.id},1)">+</button>`;
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      });
+      document.getElementById('menu-container').innerHTML = html;
+      updateCartBar();
+    }
+
+    function updateQty(id, delta) {
+      const existing = state.cart.find(c => c.id === id && !c.customLabel);
+      const item = state.menuItems.find(i => i.id === id);
+      if (delta > 0 && !existing && item && item.category === 'drink' && item.drink_config && (item.drink_config.hot || item.drink_config.iced)) {
+        openDrinkCustom(item);
+        renderMenu();
+        return;
+      }
+      if (existing) {
+        existing.qty += delta;
+        if (existing.qty <= 0) state.cart = state.cart.filter(c => c.id !== id || c.customLabel);
+      } else if (delta > 0 && item) {
+        state.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 });
+      }
+      renderMenu();
+    }
+
+    function openDrinkCustom(item) {
+      const cfg = item.drink_config || {};
+      if (cfg.temperature && !cfg.hot && !cfg.iced) { cfg.hot = true; cfg.iced = true; }
+      state.pendingDrink = { ...item, drink_config: cfg, addonTotal: 0, chosenAddons: {} };
+      document.getElementById('drink-custom-title').innerHTML = '&#x2615; ' + item.name;
+
+      const tempGroup = document.getElementById('drink-temp-group');
+      const tempOpts = document.getElementById('drink-temp-opts');
+      tempOpts.innerHTML = '';
+      const hasHot = cfg.hot, hasIced = cfg.iced;
+      if (hasHot || hasIced) {
+        tempGroup.style.display = 'block';
+        const temps = [];
+        if (hasHot) temps.push('Hot');
+        if (hasIced) temps.push('Iced');
+        temps.forEach((val, i) => {
+          const btn = document.createElement('button');
+          btn.textContent = val;
+          btn.className = i === 0 ? 'active' : '';
+          btn.onclick = () => { tempOpts.querySelectorAll('button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateDrinkTotal(); };
+          tempOpts.appendChild(btn);
+        });
+      } else {
+        tempGroup.style.display = 'none';
+      }
+
+      const sugarOpts = document.getElementById('drink-sugar-opts');
+      sugarOpts.innerHTML = '';
+      const sugars = ['No Sugar', '25%', '50%', 'Normal'];
+      sugars.forEach((val, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = val;
+        btn.className = i === 0 ? 'active' : '';
+        btn.onclick = () => { sugarOpts.querySelectorAll('button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); };
+        sugarOpts.appendChild(btn);
+      });
+
+      const addonList = document.getElementById('drink-addon-list');
+      const addonGroup = document.getElementById('drink-addon-group');
+      addonList.innerHTML = '';
+      const addons = state.addonItems;
+      if (addons.length) {
+        addonGroup.style.display = 'block';
+        addons.forEach((a, idx) => {
+          const div = document.createElement('div');
+          div.className = 'drink-addon-item';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.id = 'addon-' + idx;
+          cb.onchange = () => {
+            if (cb.checked) state.pendingDrink.chosenAddons[idx] = a;
+            else delete state.pendingDrink.chosenAddons[idx];
+            updateDrinkTotal();
+          };
+          const label = document.createElement('label');
+          label.htmlFor = 'addon-' + idx;
+          label.innerHTML = a.name + ' <span style="color:#8D6E63;font-weight:600">+฿' + a.price.toFixed(2) + '</span>';
+          div.appendChild(cb);
+          div.appendChild(label);
+          addonList.appendChild(div);
+        });
+      } else {
+        addonGroup.style.display = 'none';
+      }
+
+      updateDrinkTotal();
+      document.getElementById('drink-custom-modal').classList.add('open');
+    }
+
+    function removeDrinkItem(id) {
+      for (let i = state.cart.length - 1; i >= 0; i--) {
+        if (state.cart[i].id === id) {
+          if (state.cart[i].qty > 1) state.cart[i].qty -= 1;
+          else state.cart.splice(i, 1);
+          break;
+        }
+      }
+      renderMenu();
+    }
+
+    function closeDrinkCustom() {
+      document.getElementById('drink-custom-modal').classList.remove('open');
+      state.pendingDrink = null;
+    }
+
+    function updateDrinkTotal() {
+      const item = state.pendingDrink;
+      if (!item) return;
+      const cfg = item.drink_config || {};
+      const tempBtn = document.querySelector('#drink-temp-opts button.active');
+      const temp = tempBtn ? tempBtn.textContent : 'Hot';
+      const basePrice = temp === 'Hot' ? (cfg.hot_price || item.price) : (cfg.iced_price || item.price);
+      item.addonTotal = Object.values(item.chosenAddons).reduce((s, a) => s + a.price, 0);
+      document.getElementById('drink-custom-total').textContent = (basePrice + item.addonTotal).toFixed(2);
+    }
+
+    function confirmDrinkCustom() {
+      const item = state.pendingDrink;
+      if (!item) return;
+      const cfg = item.drink_config || {};
+      const tempBtn = document.querySelector('#drink-temp-opts button.active');
+      const sugarBtn = document.querySelector('#drink-sugar-opts button.active');
+      const temp = tempBtn ? tempBtn.textContent : 'Hot';
+      const sugar = sugarBtn ? sugarBtn.textContent : 'Normal';
+      const basePrice = temp === 'Hot' ? (cfg.hot_price || item.price) : (cfg.iced_price || item.price);
+      const addonNames = Object.values(item.chosenAddons).map(a => a.name);
+      const extras = [];
+      if (cfg.hot || cfg.iced) extras.push(temp);
+      extras.push(sugar);
+      if (addonNames.length) extras.push(addonNames.join(', '));
+      const label = extras.length ? item.name + ' (' + extras.join(', ') + ')' : item.name;
+      const totalPrice = basePrice + item.addonTotal;
+      const existing = state.cart.find(c => c.customLabel === label && c.id === item.id);
+      if (existing) { existing.qty += 1; }
+      else { state.cart.push({ id: item.id, name: label, price: totalPrice, qty: 1, customLabel: label }); }
+      closeDrinkCustom();
+      renderMenu();
+    }
+
+    function updateCartBar() {
+      const total = state.cart.reduce((s, c) => s + c.price * c.qty, 0);
+      const count = state.cart.reduce((s, c) => s + c.qty, 0);
+      const bar = document.getElementById('cart-bar');
+      if (count === 0) { bar.style.display = 'none'; return; }
+      bar.style.display = 'block';
+      document.getElementById('cart-total').textContent = `฿${total.toFixed(2)}`;
+      document.getElementById('cart-count').textContent = `${count} item${count !== 1 ? 's' : ''}`;
+      document.getElementById('order-btn').disabled = false;
+    }
+
+    function showOrderModal() {
+      if (state.cart.length === 0) return;
+      const total = state.cart.reduce((s, c) => s + c.price * c.qty, 0);
+      document.getElementById('order-items-list').innerHTML = state.cart.map(c =>
+        `<div class="order-item"><span>${c.name} x${c.qty}</span><span>฿${(c.price * c.qty).toFixed(2)}</span></div>`
+      ).join('');
+      document.getElementById('order-modal-total').textContent = `฿${total.toFixed(2)}`;
+      document.getElementById('customer-name').value = '';
+      document.getElementById('order-modal-body').style.display = 'block';
+      document.getElementById('order-success').style.display = 'none';
+      document.getElementById('order-modal').classList.add('open');
+    }
+
+    function closeOrderModal() {
+      document.getElementById('order-modal').classList.remove('open');
+    }
+
+    async function submitOrder() {
+      const customerName = document.getElementById('customer-name').value.trim();
+      const items = state.cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty }));
+      const total = state.cart.reduce((s, c) => s + c.price * c.qty, 0);
+      try {
+        const r = await fetch('/api/public/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items, subtotal: total, total, customer_name: customerName })
+        });
+        const data = await r.json();
+        document.getElementById('order-number').textContent = data.id;
+        document.getElementById('order-modal-body').style.display = 'none';
+        document.getElementById('order-success').style.display = 'block';
+      } catch(e) {
+        alert('Failed to place order. Please try again.');
+      }
+    }
+
+    function resetOrder() {
+      state.cart = [];
+      document.getElementById('order-modal').classList.remove('open');
+      renderMenu();
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>

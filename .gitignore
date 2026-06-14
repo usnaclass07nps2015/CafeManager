@@ -1,0 +1,12 @@
+cafe.db
+static/uploads/*
+!static/uploads/.gitkeep
+__pycache__/
+*.pyc
+flask*.log
+ngrok*.log
+node_modules/
+build-apk.js
+hotlatte.jfif
+menu*.csv
+package*.json

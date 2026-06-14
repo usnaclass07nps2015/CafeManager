@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="app.name">Homlamoon</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F9C1;</text></svg>">
+  <link rel="stylesheet" href="/static/css/style.css?v=6">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#8B4513">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cafe">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span>&#x1F9C1;</span> Homlamoon
+    </div>
+    <nav class="topbar-nav">
+      <a href="#" data-page="dashboard" class="active" onclick="navigate('dashboard')">
+        <span>&#x1F3E0;</span> <span data-i18n="nav.dashboard">Dashboard</span>
+      </a>
+      <a href="#" data-page="menu" onclick="navigate('menu')">
+        <span>&#x1F372;</span> <span data-i18n="nav.menu">Menu</span>
+      </a>
+      <a href="#" data-page="cashier" onclick="navigate('cashier')">
+        <span>&#x1F9FE;</span> <span data-i18n="nav.cashier">Cashier</span>
+      </a>
+      <a href="#" data-page="promotions" onclick="navigate('promotions')">
+        <span>&#x1F389;</span> <span data-i18n="nav.promotions">Promotions</span>
+      </a>
+      <a href="#" data-page="ads" onclick="navigate('ads')">
+        <span>&#x1F4F0;</span> <span data-i18n="nav.ads">Ads</span>
+      </a>
+      <a href="#" data-page="orders" onclick="navigate('orders')">
+        <span>&#x1F4CB;</span> <span data-i18n="nav.orders">Orders</span>
+      </a>
+      <a href="#" data-page="users" onclick="navigate('users')">
+        <span>&#x1F465;</span> <span data-i18n="nav.users">Users</span>
+      </a>
+    </nav>
+    <div class="topbar-actions">
+      <button id="lang-toggle" onclick="toggleLang()">EN</button>
+      <label>
+        <input type="checkbox" id="sound-toggle" checked onchange="toggleSound()"> <span data-i18n="nav.sound">&#x1F50A;</span>
+      </label>
+      <button id="display-toggle" onclick="toggleDisplayMode()">A</button>
+      <a href="/logout" data-i18n="nav.logout">&#x1F6AA;</a>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <main class="main-content" id="page-content">
+      <div class="page-header"><h1>&#x1F9C1; Homlamoon</h1></div>
+      <div class="stats-grid" id="loading-stats">
+        <div class="stat-card"><div class="stat-number">...</div><div class="stat-label" data-i18n="general.loading">Loading...</div></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- New Order Notification Banner -->
+  <div id="order-notification" class="order-notification" style="display:none">
+    <div class="order-notification-inner">
+      <span class="order-notification-icon">&#x1F514;</span>
+      <span class="order-notification-text" id="order-notification-text"></span>
+      <button class="order-notification-close" onclick="dismissNotification()">&times;</button>
+    </div>
+  </div>
+
+  <!-- Main Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Form</h2>
+
+      <!-- ─── Menu form ─── -->
+      <div class="modal-form" id="form-menu" style="display:none">
+        <div class="form-group">
+          <label data-i18n="menu.name">Name</label>
+          <input class="form-control" id="item-name" data-i18n="menu.name" placeholder="Item name">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="menu.category">Category</label>
+            <select class="form-control" id="item-category" onchange="toggleDrinkConfig()" data-i18n data-i18n-opt="menu.drink_label,menu.bakery_label,menu.addon_label">
+              <option value="drink" data-i18n="menu.drink_label">&#x2615; Drink</option>
+              <option value="bakery" data-i18n="menu.bakery_label">&#x1F9C1; Bakery</option>
+              <option value="addon" data-i18n="menu.addon_label">&#x2795; Add-on</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="menu.price">Price (&#xe3f;)</label>
+            <input class="form-control" id="item-price" type="number" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="menu.desc">Description</label>
+          <textarea class="form-control" id="item-desc" rows="2" data-i18n="menu.desc" placeholder="Optional description"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="menu.image">Image (upload)</label>
+          <input class="form-control" id="ad-image-file" type="file" accept="image/*" onchange="previewAdImage(this)">
+          <input id="ad-image" type="hidden">
+          <div id="ad-image-preview" style="margin-top:0.5rem;max-width:150px;display:none">
+            <img style="width:100%;border-radius:8px;border:1px solid var(--border)">
+          </div>
+        </div>
+        <input id="ad-media-url" type="hidden">
+        <div class="form-group">
+          <label data-i18n="menu.available">Available</label>
+          <select class="form-control" id="item-available" data-i18n data-i18n-opt="menu.yes,menu.no">
+            <option value="1" data-i18n="menu.yes">Yes</option>
+            <option value="0" data-i18n="menu.no">No</option>
+          </select>
+        </div>
+
+        <div id="drink-config-section" style="border-top:2px dashed var(--warm);padding-top:1rem;margin-top:0.5rem">
+          <h4 style="color:var(--accent);margin-bottom:0.8rem" data-i18n="menu.drink_options">&#x2615; Drink Options</h4>
+          <div class="form-group">
+            <label style="margin-bottom:0.4rem" data-i18n="cashier.temp">Temperature</label>
+            <div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+              <label><input type="checkbox" id="drink-hot" onchange="toggleTempPrice('hot')"> <span data-i18n="menu.hot">Hot</span> <input type="number" id="hot-price" step="0.5" min="0" style="width:80px;display:none;font-size:0.85rem" placeholder="฿"></label>
+              <label><input type="checkbox" id="drink-iced" onchange="toggleTempPrice('iced')"> <span data-i18n="menu.iced">Iced</span> <input type="number" id="iced-price" step="0.5" min="0" style="width:80px;display:none;font-size:0.85rem" placeholder="฿"></label>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-outline" onclick="closeModal()" data-i18n="menu.cancel">Cancel</button>
+          <button class="btn btn-primary" onclick="saveMenuItem()" data-i18n="menu.save">Save</button>
+        </div>
+      </div>
+
+      <!-- ─── Promo form ─── -->
+      <div class="modal-form" id="form-promo" style="display:none">
+        <div class="form-group">
+          <label data-i18n="promo.promo_name">Promotion Name</label>
+          <input class="form-control" id="promo-name" data-i18n="promo.placeholder_name" placeholder="e.g. Happy Hour">
+        </div>
+        <div class="form-group">
+          <label data-i18n="promo.desc">Description</label>
+          <textarea class="form-control" id="promo-desc" rows="2" placeholder="Optional description"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="promo.discount_pct">Discount (%)</label>
+          <input class="form-control" id="promo-pct" type="number" step="1" min="0" max="100" placeholder="20">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="promo.start">Start Date</label>
+            <input class="form-control" id="promo-start" type="date">
+          </div>
+          <div class="form-group">
+            <label data-i18n="promo.end">End Date</label>
+            <input class="form-control" id="promo-end" type="date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="promo.status">Status</label>
+          <select class="form-control" id="promo-active" data-i18n data-i18n-opt="promo.active_label,promo.inactive">
+            <option value="1" data-i18n="promo.active_label">Active</option>
+            <option value="0" data-i18n="promo.inactive">Inactive</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-outline" onclick="closeModal()" data-i18n="promo.cancel">Cancel</button>
+          <button class="btn btn-primary" onclick="savePromo()" data-i18n="promo.save">Save</button>
+        </div>
+      </div>
+
+      <!-- ─── Order detail form ─── -->
+      <div class="modal-form" id="form-order-detail" style="display:none">
+        <div id="order-detail-body"></div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-primary" onclick="closeModal()" data-i18n="orders.close">Close</button>
+        </div>
+      </div>
+
+      <!-- ─── Topping form ─── -->
+      <div class="modal-form" id="form-topping" style="display:none">
+        <div class="form-group">
+          <label data-i18n="toppings.name">Name</label>
+          <input class="form-control" id="topping-name" placeholder="e.g. Boba">
+        </div>
+        <div class="form-group">
+          <label data-i18n="toppings.price">Extra Price</label>
+          <input class="form-control" id="topping-price" type="number" step="0.5" min="0" placeholder="10">
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-outline" onclick="closeModal()" data-i18n="menu.cancel">Cancel</button>
+          <button class="btn btn-primary" onclick="saveTopping()">Save</button>
+        </div>
+      </div>
+
+      <!-- ─── User form ─── -->
+      <div class="modal-form" id="form-user" style="display:none">
+        <div class="form-group">
+          <label data-i18n="users.username">Username</label>
+          <input class="form-control" id="user-username" placeholder="Username">
+        </div>
+        <div class="form-group">
+          <label data-i18n="users.password">Password</label>
+          <div style="display:flex;gap:0.3rem">
+            <input class="form-control" id="user-password" type="password" placeholder="8+ chars, letters + numbers" style="flex:1">
+            <button type="button" onclick="togglePassword()" style="background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:0 8px;font-size:1.1rem;line-height:1" id="pw-toggle">&#x1F441;</button>
+          </div>
+        </div>
+        <div class="form-group" id="user-role-section">
+          <label data-i18n="role.label">Role</label>
+          <select class="form-control" id="user-role">
+            <option value="admin" data-i18n="role.admin">Admin</option>
+            <option value="manager" data-i18n="role.manager">Manager</option>
+            <option value="staff" data-i18n="role.staff">Staff</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-outline" onclick="closeModal()" data-i18n="users.cancel">Cancel</button>
+          <button class="btn btn-primary" onclick="saveUser()" data-i18n="users.save">Save</button>
+        </div>
+      </div>
+
+      <!-- ─── Ad form ─── -->
+      <div class="modal-form" id="form-ad" style="display:none">
+        <div class="form-group">
+          <label data-i18n="ads.ad_title">Ad Title</label>
+          <input class="form-control" id="ad-title" placeholder="Ad title">
+        </div>
+        <div class="form-group">
+          <label data-i18n="ads.ad_content">Content</label>
+          <textarea class="form-control" id="ad-content" rows="2" placeholder="Ad text content"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="ads.image_label">Ad Image</label>
+          <input id="ad-image-file" type="file" accept="image/*" onchange="previewAdImage(this)" style="display:block;margin-bottom:0.3rem">
+          <input id="ad-image" type="hidden">
+          <div id="ad-image-preview" style="display:none;max-width:120px;margin-top:0.3rem">
+            <img style="width:100%;border-radius:6px;border:1px solid var(--border)">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="ads.media_type">Screensaver Type</label>
+            <select class="form-control" id="ad-media-type" onchange="toggleAdMediaFields()" data-i18n data-i18n-opt="ads.media_image,ads.media_video,ads.media_youtube">
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+              <option value="youtube">YouTube</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="ads.status">Status</label>
+            <select class="form-control" id="ad-active">
+              <option value="1" data-i18n="ads.active_label">Active</option>
+              <option value="0" data-i18n="ads.inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" id="ad-video-upload-group" style="display:none">
+          <label data-i18n="ads.video">Video file</label>
+          <input id="ad-video-file" type="file" accept="video/*" style="display:block">
+        </div>
+        <div class="form-group" id="ad-youtube-group" style="display:none">
+          <label data-i18n="ads.youtube_url">YouTube URL</label>
+          <input class="form-control" id="ad-youtube-url" placeholder="https://youtube.com/watch?v=...">
+        </div>
+        <input id="ad-media-url" type="hidden">
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+          <button class="btn btn-outline" onclick="closeModal()" data-i18n="ads.cancel">Cancel</button>
+          <button class="btn btn-primary" onclick="saveAd()" data-i18n="ads.save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drink Customization Modal -->
+  <div class="modal-overlay" id="drink-custom-modal">
+    <div class="modal" style="max-width:400px">
+      <h2 id="drink-custom-title" data-i18n="cashier.customize_title">Customize Drink</h2>
+      <div id="drink-custom-body">
+        <p id="drink-custom-base" style="color:var(--text-light);margin-bottom:0.8rem"></p>
+        <div id="drink-custom-temp-section" class="form-group" style="display:none">
+          <label data-i18n="cashier.temp">Temperature</label>
+          <div id="drink-custom-temp-options"></div>
+        </div>
+        <div id="drink-custom-sugar-section" class="form-group" style="display:none">
+          <label data-i18n="cashier.sugar">Sugar Level</label>
+          <div id="drink-custom-sugar-options"></div>
+        </div>
+        <div id="drink-custom-addons-section" class="form-group" style="display:none">
+          <label data-i18n="cashier.addons">Add-ons</label>
+          <div id="drink-custom-addons"></div>
+        </div>
+        <div style="font-size:1.3rem;font-weight:700;text-align:right;color:var(--primary);padding:0.5rem 0">
+          ฿<span id="drink-custom-total">0.00</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem">
+        <button class="btn btn-outline" onclick="closeDrinkCustom()" data-i18n="menu.cancel">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmDrinkCustom()" data-i18n="cashier.add_to_order">Add to Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screensaver Overlay -->
+  <div id="screensaver-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#111;cursor:none">
+    <div id="screensaver-content" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2rem"></div>
+    <div style="position:absolute;bottom:20px;right:20px;color:rgba(255,255,255,0.3);font-size:0.75rem">Click or move mouse to return</div>
+  </div>
+
+  <script src="/static/js/i18n.js?v=6"></script>
+  <script src="/static/js/main.js?v=6"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const observer = new MutationObserver(() => {
+        if (document.getElementById('modal-overlay').classList.contains('open')) {
+          const forms = ['form-menu','form-promo','form-ad','form-user','form-order-detail','form-topping'];
+          forms.forEach(f => { const el = document.getElementById(f); if (el) el.style.display = 'none'; });
+          const title = document.getElementById('modal-title').textContent;
+          if (title.includes('Menu') || title.includes('Item') || title.includes('เมนู') || title.includes('รายการ')) {
+          document.getElementById('form-menu').style.display = 'block';
+          toggleDrinkConfig();
+          translateStatic();
+        } else if (title.includes('Promotion') || title.includes('โปรโมชั่น')) {
+          document.getElementById('form-promo').style.display = 'block';
+          translateStatic();
+        } else if (title.includes('User') || title.includes('ผู้ใช้')) {
+          document.getElementById('form-user').style.display = 'block';
+          translateStatic();
+        } else if (title.includes('Order') || title.includes('Details') || title.includes('ออเดอร์') || title.includes('รายละเอียด')) {
+          document.getElementById('form-order-detail').style.display = 'block';
+        } else if (title.includes('Topping') || title.includes('ท็อปปิ้ง')) {
+          document.getElementById('form-topping').style.display = 'block';
+          translateStatic();
+        } else if (title.includes('Ad') || title.includes('โฆษณา')) {
+          document.getElementById('form-ad').style.display = 'block';
+          translateStatic();
+        }
+      }
+    });
+    const modal = document.getElementById('modal-overlay');
+    observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.getElementById('drink-custom-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeDrinkCustom();
+      });
+
+      // Fetch current user and apply role-based UI
+      try {
+        const me = await fetch('/api/me').then(r => r.json());
+        currentUserRole = me.role;
+        currentUsername = me.username;
+        applyRoleUI();
+      } catch(e) { currentUserRole = null; }
+      // apply saved display mode
+      applyDisplayMode();
+      // initial language apply
+      document.getElementById('lang-toggle').textContent = t('lang.' + currentLang);
+      translateStatic();
+      navigate('dashboard');
+      // Sound toggle init
+      const soundCb = document.getElementById('sound-toggle');
+      if (soundCb) soundCb.checked = localStorage.getItem('cafe_sound') !== 'off';
+      // Preload speech voices and start order polling
+      preloadVoices();
+      startOrderPolling();
+      // Start screensaver idle detection
+      initScreensaver();
+    });
+
+    function togglePassword() {
+      const inp = document.getElementById('user-password');
+      const btn = document.getElementById('pw-toggle');
+      if (!inp || !btn) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '&#x1F441;';
+      } else {
+        inp.type = 'password';
+        btn.innerHTML = '&#x1F441;';
+      }
+    }
+  </script>
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/static/sw.js');</script>
+</body>
+</html>
