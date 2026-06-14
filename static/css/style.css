@@ -649,16 +649,16 @@ body.compact .form-row { grid-template-columns: 1fr; }
 .rcpt-thanks { text-align: center; margin-top: 4px; font-size: 13px; }
 
 @media print {
-  body * { display: none !important; }
-  .receipt-overlay, .receipt-overlay * { display: block !important; }
-  .receipt-overlay { position: static; background: none; padding: 0; }
-  .receipt-paper { width: 40mm; padding: 2px 5px; border: none; box-shadow: none; border-radius: 0; max-height: none; overflow: visible; font-size: 11px; }
-  .receipt-paper .no-print { display: none !important; }
-  .receipt-paper .rcpt-brand { font-size: 15px; }
-  .receipt-paper .rcpt-sub { font-size: 10px; }
-  .receipt-paper .rcpt-line { margin: 3px 0; }
-  .receipt-paper .rcpt-row { padding: 1px 0; }
-  .receipt-paper .rcpt-total { font-size: 13px; }
-  .receipt-paper .rcpt-thanks { font-size: 10px; }
+  body > *:not(#receipt-overlay) { display: none !important; }
+  #receipt-overlay { position: static !important; background: none !important; padding: 0 !important; display: block !important; }
+  #receipt-overlay * { display: block !important; }
+  #receipt-paper { width: 40mm !important; padding: 2px 5px !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; max-height: none !important; overflow: visible !important; font-size: 11px !important; margin: 0 auto !important; }
+  #receipt-paper .no-print { display: none !important; }
+  #receipt-paper .rcpt-brand { font-size: 15px !important; }
+  #receipt-paper .rcpt-sub { font-size: 10px !important; }
+  #receipt-paper .rcpt-line { margin: 3px 0 !important; }
+  #receipt-paper .rcpt-row { padding: 1px 0 !important; display: flex !important; }
+  #receipt-paper .rcpt-total { font-size: 13px !important; }
+  #receipt-paper .rcpt-thanks { font-size: 10px !important; }
   @page { margin: 0; size: 40mm auto; }
 }
