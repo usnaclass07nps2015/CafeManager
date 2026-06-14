@@ -899,6 +899,7 @@ async function renderOrders(container) {
   container.innerHTML = `
     <div class="page-header">
       <h1>&#x1F4CB; ${t('orders.title')}</h1>
+      <button class="btn btn-outline" onclick="exportOrdersPDF()">${t('orders.export_pdf')}</button>
       ${isAdminOrManager() ? `<button class="btn btn-danger" onclick="deleteAllSales()">${t('orders.delete_all')}</button>` : ''}
     </div>
     <div class="stats-grid">
@@ -985,6 +986,10 @@ async function deleteAllSales() {
   if (!confirm(t('orders.confirm_delete_all_2'))) return;
   await api('/api/sales', 'DELETE');
   navigate('orders');
+}
+
+function exportOrdersPDF() {
+  window.open('/api/sales/export-pdf', '_blank');
 }
 
 // ─── Promotions ──────────────────────────────────────────────────────

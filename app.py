@@ -561,6 +561,69 @@ def delete_all_sales():
     conn.commit(); conn.close()
     return jsonify({'ok': True})
 
+@app.route('/api/sales/export-pdf')
+@login_required
+def export_sales_pdf():
+    from fpdf import FPDF
+    from io import BytesIO
+
+    conn = get_db()
+    sales = conn.execute('SELECT * FROM sales ORDER BY created_at DESC').fetchall()
+    conn.close()
+
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf.add_page()
+    pdf.set_font('Helvetica', 'B', 15)
+    pdf.cell(0, 10, 'Order History - Homlamoon', new_x='LMARGIN', new_y='NEXT', align='C')
+    pdf.set_font('Helvetica', '', 8)
+    pdf.cell(0, 5, 'Generated: ' + datetime.now().strftime('%Y-%m-%d %H:%M'), new_x='LMARGIN', new_y='NEXT', align='C')
+    pdf.ln(5)
+
+    col_w = [12, 55, 28, 22, 42, 28]
+    headers = ['#', 'Items', 'Total', 'Payment', 'Date', 'Status']
+    pdf.set_font('Helvetica', 'B', 9)
+    pdf.set_fill_color(139, 69, 19)
+    pdf.set_text_color(255, 255, 255)
+    for i, h in enumerate(headers):
+        pdf.cell(col_w[i], 7, h, border=1, align='C', fill=True)
+    pdf.ln()
+
+    pdf.set_text_color(0, 0, 0)
+    total_revenue = 0
+    for s in sales:
+        s = dict(s)
+        items = json.loads(s['items'] or '[]')
+        item_count = len(items)
+        subtotal = s['total'] or 0
+        total_revenue += subtotal
+        pay_method = s['payment_method'] or 'cash'
+        status = 'Paid' if s.get('payment_confirmed') else 'Pending'
+        created = s['created_at'][:16] if s['created_at'] else ''
+
+        row_h = 6
+        if pdf.get_y() + row_h > 270:
+            pdf.add_page()
+        pdf.set_font('Helvetica', '', 8)
+        pdf.cell(col_w[0], row_h, str(s['daily_seq'] or s['id']), border=1, align='C')
+        pdf.cell(col_w[1], row_h, str(item_count) + ' item(s)', border=1)
+        pdf.cell(col_w[2], row_h, 'THB {:.2f}'.format(subtotal), border=1, align='R')
+        pdf.cell(col_w[3], row_h, pay_method.capitalize(), border=1, align='C')
+        pdf.cell(col_w[4], row_h, created, border=1, align='C')
+        pdf.cell(col_w[5], row_h, status, border=1, align='C')
+        pdf.ln()
+
+    pdf.ln(5)
+    pdf.set_font('Helvetica', 'B', 12)
+    pdf.cell(0, 8, 'Total Revenue: THB {:.2f}'.format(total_revenue), new_x='LMARGIN', new_y='NEXT', align='R')
+    pdf.cell(0, 8, 'Total Orders: {}'.format(len(sales)), new_x='LMARGIN', new_y='NEXT', align='R')
+
+    buf = BytesIO()
+    pdf.output(buf)
+    buf.seek(0)
+    response = Response(buf.read(), mimetype='application/pdf')
+    response.headers['Content-Disposition'] = 'attachment; filename=order_history.pdf'
+    return response
+
 # ─── Promotions ──────────────────────────────────────────────────────
 @app.route('/promotions')
 @login_required
