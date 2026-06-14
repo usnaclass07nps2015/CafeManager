@@ -833,67 +833,60 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
   const displayId = dailySeq || id;
   const ppStatus = paymentMethod === 'promptpay' ? (paymentConfirmed ? (t('orders.payment_complete') || 'Paid') : (t('orders.payment_pending') || 'Pending')) : '';
   const serviceLabel = orderType === 'takeaway' ? t('service.takeaway') : t('service.dine_in');
-  const lines = [];
-  const p = (s) => lines.push(s);
-  p('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title>');
-  p('<style>');
-  p('* { margin: 0; padding: 0; box-sizing: border-box; }');
-  p('body { font-family: "Courier New", monospace; font-size: 11px; width: 40mm; padding: 2px 5px; color: #000; font-weight: bold; }');
-  p('.center { text-align: center; }');
-  p('.brand { font-size: 15px; margin-bottom: 1px; }');
-  p('.sub { font-size: 10px; margin-bottom: 2px; }');
-  p('.line { border-top: 1px dashed #000; margin: 3px 0; }');
-  p('.row { display: flex; justify-content: space-between; padding: 1px 0; }');
-  p('.row span:first-child { flex: 1; }');
-  p('.total-row { font-size: 13px; padding: 1px 0; }');
-  p('.thanks { text-align: center; margin-top: 3px; font-size: 10px; }');
-  p('.close-btn { display:block;width:100%;padding:10px;margin:10px 0;text-align:center;font-size:14px;font-weight:bold;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer; }');
-  p('@media print { .close-btn, .no-print { display:none !important; } @page { margin: 0; size: 40mm auto; } body { margin: 0; } }');
-  p('@media screen { body { width: auto; max-width: 400px; margin: 0 auto; padding: 10px; } }');
-  p('</style></head><body>');
+  let html = '';
+  const h = (s) => html += s;
+  h('<div class="receipt-overlay" id="receipt-overlay">');
+  h('<div class="receipt-paper" id="receipt-paper">');
   if (copy === 'kitchen' || copy === 'both') {
-  p(`<div class="center"><div class="brand">Homlamoon</div><div class="sub">${dateStr}</div><div class="sub">#${displayId} &middot; ${serviceLabel}</div>${customerName ? `<div class="sub">${t('cashier.customer_name') || 'Customer'}: ${customerName}</div>` : ''}</div>`);
-  p('<div class="line"></div>');
+  h(`<div class="rcpt-center"><div class="rcpt-brand">Homlamoon</div><div class="rcpt-sub">${dateStr}</div><div class="rcpt-sub">#${displayId} &middot; ${serviceLabel}</div>${customerName ? `<div class="rcpt-sub">${t('cashier.customer_name') || 'Customer'}: ${customerName}</div>` : ''}</div>`);
+  h('<div class="rcpt-line"></div>');
   items.forEach(i => {
-    p(`<div class="row"><span>${i.name}</span><span>฿${(i.price * i.qty).toFixed(2)}</span></div>`);
-    p(`<div class="row" style="font-size:11px;padding-left:8px"><span class="qty">x${i.qty} ฿${i.price.toFixed(2)}</span></div>`);
+    h(`<div class="rcpt-row"><span>${i.name}</span><span>฿${(i.price * i.qty).toFixed(2)}</span></div>`);
+    h(`<div class="rcpt-row" style="font-size:11px;padding-left:8px"><span class="qty">x${i.qty} ฿${i.price.toFixed(2)}</span></div>`);
   });
-  p('<div class="line"></div>');
-  p(`<div class="row"><span>${t('orders.subtotal')}</span><span>฿${subtotal.toFixed(2)}</span></div>`);
-  if (discount > 0) p(`<div class="row"><span>${t('orders.discount')}</span><span>-฿${discount.toFixed(2)}</span></div>`);
-  p(`<div class="row total-row"><span>${t('orders.total')}</span><span>฿${total.toFixed(2)}</span></div>`);
-  p('<div class="line"></div>');
+  h('<div class="rcpt-line"></div>');
+  h(`<div class="rcpt-row"><span>${t('orders.subtotal')}</span><span>฿${subtotal.toFixed(2)}</span></div>`);
+  if (discount > 0) h(`<div class="rcpt-row"><span>${t('orders.discount')}</span><span>-฿${discount.toFixed(2)}</span></div>`);
+  h(`<div class="rcpt-row rcpt-total"><span>${t('orders.total')}</span><span>฿${total.toFixed(2)}</span></div>`);
+  h('<div class="rcpt-line"></div>');
   if (paymentMethod === 'promptpay') {
-    p('<div class="center" style="margin:2px 0;font-size:11px">PromptPay &mdash; ' + ppStatus + '</div>');
+    h('<div class="rcpt-center" style="margin:2px 0;font-size:11px">PromptPay &mdash; ' + ppStatus + '</div>');
   }
-  p('<div class="thanks">Thank you! &bull; ขอบคุณ!</div>');
+  h('<div class="rcpt-thanks">Thank you! &bull; ขอบคุณ!</div>');
   }
   if (copy === 'customer' || copy === 'both') {
-    p('<div style="text-align:center;margin:0 0 4px;font-size:10px">--- Customer Copy ---</div>');
-    p(`<div class="center"><div class="brand">Homlamoon</div><div class="sub">${dateStr}</div><div class="sub">#${displayId} &middot; ${serviceLabel}</div>${customerName ? `<div class="sub">${t('cashier.customer_name') || 'Customer'}: ${customerName}</div>` : ''}</div>`);
-    p('<div class="line"></div>');
+    h('<div class="rcpt-center" style="margin:0 0 4px;font-size:10px">--- Customer Copy ---</div>');
+    h(`<div class="rcpt-center"><div class="rcpt-brand">Homlamoon</div><div class="rcpt-sub">${dateStr}</div><div class="rcpt-sub">#${displayId} &middot; ${serviceLabel}</div>${customerName ? `<div class="rcpt-sub">${t('cashier.customer_name') || 'Customer'}: ${customerName}</div>` : ''}</div>`);
+    h('<div class="rcpt-line"></div>');
     items.forEach(i => {
-      p(`<div class="row"><span>${i.name}</span><span>฿${(i.price * i.qty).toFixed(2)}</span></div>`);
-      p(`<div class="row" style="font-size:11px;padding-left:8px"><span class="qty">x${i.qty} ฿${i.price.toFixed(2)}</span></div>`);
+      h(`<div class="rcpt-row"><span>${i.name}</span><span>฿${(i.price * i.qty).toFixed(2)}</span></div>`);
+      h(`<div class="rcpt-row" style="font-size:11px;padding-left:8px"><span class="qty">x${i.qty} ฿${i.price.toFixed(2)}</span></div>`);
     });
-    p('<div class="line"></div>');
-    p(`<div class="row"><span>${t('orders.subtotal')}</span><span>฿${subtotal.toFixed(2)}</span></div>`);
-    if (discount > 0) p(`<div class="row"><span>${t('orders.discount')}</span><span>-฿${discount.toFixed(2)}</span></div>`);
-    p(`<div class="row total-row"><span>${t('orders.total')}</span><span>฿${total.toFixed(2)}</span></div>`);
-    p('<div class="line"></div>');
+    h('<div class="rcpt-line"></div>');
+    h(`<div class="rcpt-row"><span>${t('orders.subtotal')}</span><span>฿${subtotal.toFixed(2)}</span></div>`);
+    if (discount > 0) h(`<div class="rcpt-row"><span>${t('orders.discount')}</span><span>-฿${discount.toFixed(2)}</span></div>`);
+    h(`<div class="rcpt-row rcpt-total"><span>${t('orders.total')}</span><span>฿${total.toFixed(2)}</span></div>`);
+    h('<div class="rcpt-line"></div>');
     if (paymentMethod === 'promptpay') {
-      p('<div class="center" style="margin:2px 0;font-size:11px">PromptPay &mdash; ' + ppStatus + '</div>');
+      h('<div class="rcpt-center" style="margin:2px 0;font-size:11px">PromptPay &mdash; ' + ppStatus + '</div>');
     }
-    p('<div class="thanks">Thank you! &bull; ขอบคุณ!</div>');
+    h('<div class="rcpt-thanks">Thank you! &bull; ขอบคุณ!</div>');
   }
-  p('<div class="no-print" style="text-align:center;margin-top:15px"><button class="close-btn" onclick="window.close()">' + (t('orders.close') || 'Close') + '</button></div>');
-  p('</body></html>');
-  const w = window.open('', '_blank', 'width=500,height=700');
-  if (w) {
-    w.document.write(lines.join('\n'));
-    w.document.close();
-    setTimeout(() => { w.focus(); w.print(); }, 300);
-  }
+  h('</div>');
+  h('<div style="display:flex;gap:10px;justify-content:center;margin-top:15px" class="no-print">');
+  h('<button class="btn btn-primary" onclick="document.getElementById(\'receipt-paper\').classList.add(\'printing\');window.print()">&#x1F5A8; Print</button>');
+  h('<button class="btn btn-outline" onclick="closeReceipt()">' + (t('orders.close') || 'Close') + '</button>');
+  h('</div>');
+  h('</div>');
+  const el = document.createElement('div');
+  el.id = 'receipt-overlay-container';
+  el.innerHTML = html;
+  document.body.appendChild(el);
+}
+
+function closeReceipt() {
+  const el = document.getElementById('receipt-overlay-container');
+  if (el) el.remove();
 }
 
 // ─── Orders ──────────────────────────────────────────────────────────
