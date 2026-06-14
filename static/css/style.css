@@ -634,25 +634,31 @@ body.compact .form-row { grid-template-columns: 1fr; }
 }
 .receipt-paper {
   background: #fff; color: #000; font-weight: bold;
-  font-family: "Courier New", monospace; font-size: 11px;
-  width: 280px; max-width: 100%; max-height: 80vh; overflow-y: auto;
-  padding: 10px 15px; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  font-family: "Courier New", monospace; font-size: 14px;
+  width: 380px; max-width: 100%; max-height: 80vh; overflow-y: auto;
+  padding: 15px 20px; border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 .receipt-paper.printing { max-height: none; overflow: visible; }
 .rcpt-center { text-align: center; }
-.rcpt-brand { font-size: 15px; margin-bottom: 1px; }
-.rcpt-sub { font-size: 10px; margin-bottom: 2px; }
-.rcpt-line { border-top: 1px dashed #000; margin: 3px 0; }
-.rcpt-row { display: flex; justify-content: space-between; padding: 1px 0; }
+.rcpt-brand { font-size: 18px; margin-bottom: 2px; }
+.rcpt-sub { font-size: 13px; margin-bottom: 3px; }
+.rcpt-line { border-top: 1px dashed #000; margin: 4px 0; }
+.rcpt-row { display: flex; justify-content: space-between; padding: 2px 0; }
 .rcpt-row span:first-child { flex: 1; }
-.rcpt-total { font-size: 13px; }
-.rcpt-thanks { text-align: center; margin-top: 3px; font-size: 10px; }
+.rcpt-total { font-size: 16px; }
+.rcpt-thanks { text-align: center; margin-top: 4px; font-size: 13px; }
 
 @media print {
   body * { display: none !important; }
   .receipt-overlay, .receipt-overlay * { display: block !important; }
   .receipt-overlay { position: static; background: none; padding: 0; }
-  .receipt-paper { width: 40mm; padding: 2px 5px; border: none; box-shadow: none; border-radius: 0; max-height: none; overflow: visible; }
+  .receipt-paper { width: 40mm; padding: 2px 5px; border: none; box-shadow: none; border-radius: 0; max-height: none; overflow: visible; font-size: 11px; }
   .receipt-paper .no-print { display: none !important; }
+  .receipt-paper .rcpt-brand { font-size: 15px; }
+  .receipt-paper .rcpt-sub { font-size: 10px; }
+  .receipt-paper .rcpt-line { margin: 3px 0; }
+  .receipt-paper .rcpt-row { padding: 1px 0; }
+  .receipt-paper .rcpt-total { font-size: 13px; }
+  .receipt-paper .rcpt-thanks { font-size: 10px; }
   @page { margin: 0; size: 40mm auto; }
 }
