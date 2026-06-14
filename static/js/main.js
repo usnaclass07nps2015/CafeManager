@@ -847,7 +847,9 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
   p('.row span:first-child { flex: 1; }');
   p('.total-row { font-size: 13px; padding: 1px 0; }');
   p('.thanks { text-align: center; margin-top: 3px; font-size: 10px; }');
-  p('@media print { @page { margin: 0; size: 40mm auto; } body { margin: 0; } }');
+  p('.close-btn { display:block;width:100%;padding:10px;margin:10px 0;text-align:center;font-size:14px;font-weight:bold;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer; }');
+  p('@media print { .close-btn, .no-print { display:none !important; } @page { margin: 0; size: 40mm auto; } body { margin: 0; } }');
+  p('@media screen { body { width: auto; max-width: 400px; margin: 0 auto; padding: 10px; } }');
   p('</style></head><body>');
   if (copy === 'kitchen' || copy === 'both') {
   p(`<div class="center"><div class="brand">Homlamoon</div><div class="sub">${dateStr}</div><div class="sub">#${displayId} &middot; ${serviceLabel}</div>${customerName ? `<div class="sub">${t('cashier.customer_name') || 'Customer'}: ${customerName}</div>` : ''}</div>`);
@@ -884,8 +886,9 @@ function printReceipt({ items, subtotal, discount, total, id, dailySeq, orderTyp
     }
     p('<div class="thanks">Thank you! &bull; ขอบคุณ!</div>');
   }
+  p('<div class="no-print" style="text-align:center;margin-top:15px"><button class="close-btn" onclick="window.close()">' + (t('orders.close') || 'Close') + '</button></div>');
   p('</body></html>');
-  const w = window.open('', '_blank', 'width=400,height=600');
+  const w = window.open('', '_blank', 'width=500,height=700');
   if (w) {
     w.document.write(lines.join('\n'));
     w.document.close();
